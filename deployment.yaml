@@ -1,0 +1,113 @@
+version: '3'
+
+services:
+  authenticationDB:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - 3308:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 1000
+    volumes:
+    - authenticationdata:/var/lib/mysql
+    networks:
+      - authenticationnet
+  authenticationDBMigration:
+    image: authenticationdbmigration
+    environment:
+      - DATABASE_URL=authenticationDB
+    depends_on:
+      authenticationDB:
+        condition: service_healthy
+    networks:
+      - authenticationnet
+  authentication:
+    image: authentication
+    environment:
+      - DATABASE_URL=authenticationDB
+    depends_on:
+      - authenticationDBMigration
+    ports:
+    - 5000:5000
+    networks:
+      - authenticationnet
+  storeDB:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 1000
+    volumes:
+      - storedata:/var/lib/mysql
+    networks:
+      - storenet
+  storeDBMigration:
+    image: storedbmigration
+    environment:
+      - DATABASE_URL=storeDB
+      - DATABASE_PORT=3306
+    depends_on:
+      storeDB:
+        condition: service_healthy
+    networks:
+      - storenet
+  storeOwner:
+    image: storeowner
+    environment:
+      - DATABASE_URL=storeDB
+      - BlockchainURL=blockchain
+      - DATABASE_PORT=3306
+    depends_on:
+      - storeDBMigration
+      - blockchain
+    ports:
+      - 5001:5001
+    networks:
+      - storenet
+  storeCustomer:
+    image: storecustomer
+    environment:
+      - DATABASE_URL=storeDB
+      - BlockchainURL=blockchain
+      - DATABASE_PORT=3306
+    depends_on:
+      - storeDBMigration
+      - blockchain
+    ports:
+      - 5002:5002
+    networks:
+      - storenet
+  storeCourier:
+    image: storecourier
+    environment:
+      - DATABASE_URL=storeDB
+      - BlockchainURL=blockchain
+      - DATABASE_PORT=3306
+    depends_on:
+      - storeDBMigration
+      - blockchain
+    ports:
+      - 5003:5003
+    networks:
+      - storenet
+  blockchain:
+    image: trufflesuite/ganache-cli
+    ports:
+      - 8545:8545
+    networks:
+      - storenet
+
+volumes:
+  authenticationdata:
+  storedata:
+
+networks:
+  authenticationnet:
+  storenet:
