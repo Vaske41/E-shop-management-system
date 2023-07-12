@@ -141,7 +141,7 @@ def order():
         return Response(json.dumps({'message': 'Invalid address.'}), status=400)
 
 
-    transactionHash = orderContractInterface.constructor(request.json["address"]).transact({
+    transactionHash = orderContractInterface.constructor(address).transact({
             "from": owner,
     })
     receipt = web3.eth.wait_for_transaction_receipt(transactionHash)
@@ -235,8 +235,6 @@ def pay():
         bytecode=bytecode
     )
 
-    #if web3.eth.get_balance(address) < int(order.price):
-    #    return Response(json.dumps({'message': 'Insufficient funds.'}), status=400)
 
     try:
         transactionHash = newContract.functions.pay().build_transaction({
@@ -298,7 +296,7 @@ def delivered():
     )
 
     try:
-        transactionHash = newContract.functions.delivery_finished().build_transaction({
+        transactionHash = newContract.functions.deliver().build_transaction({
             "from": address,
             "gasPrice": 21000,
             "nonce": web3.eth.get_transaction_count(address),

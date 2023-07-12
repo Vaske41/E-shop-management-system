@@ -79,7 +79,7 @@ def pick_up_order():
         bytecode=bytecode
     )
     try:
-        transactionHash = newContract.functions.join_courier(address).transact({
+        transactionHash = newContract.functions.pick_up(address).transact({
             'from': owner,
         })
     except ContractLogicError as error:

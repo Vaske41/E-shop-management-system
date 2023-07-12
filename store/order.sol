@@ -1,41 +1,42 @@
 pragma solidity ^0.8.2;
 
-contract Purchase {
-	address payable courier = payable (address(0));
+contract Payment {
+	address payable courier;
 	address payable owner;
 	address customer;
 
 	bool paid = false;
-    bool picked = false;
+	bool picked = false;
 	bool delivered = false;
 
-	modifier picked_up() {
-		require(picked, "No one picked up.");
-		_;
-	}
 
-	modifier only_customer() {
+	modifier is_customer() {
 		require(msg.sender == customer, "Invalid customer account.");
 		_;
 	}
 
-	modifier already_payed() {
+	modifier is_paid() {
 		require(paid, "Transfer not complete.");
 		_;
 	}
 
-	modifier not_payed() {
+	modifier not_paid() {
 		require(!paid, "Transfer already complete.");
 		_;
 	}
 
-	modifier not_picked() {
-		require(!picked, "Delivery not complete.");
+	modifier picked_up() {
+		require(picked, "Delivery not complete.");
 		_;
 	}
 
-	modifier not_delivered() {
-        require(!delivered, "Contract closed.");
+	modifier not_picked_up(){
+		require(!picked, "Already picked up.");
+		_;
+	}
+
+	modifier not_delivered(){
+		require(!delivered, "Already delivered");
 		_;
 	}
 
@@ -44,19 +45,19 @@ contract Purchase {
 		customer = _customer;
 	}
 
-	function pay() external payable only_customer not_payed {
+	function pay() external payable is_customer not_paid {
 		paid = true;
 	}
 
-	function get_order_courier(address payable _courier) external already_payed not_picked {
+	function pick_up(address payable _courier) external is_paid not_picked_up {
 		courier = _courier;
+		picked = true;
 	}
 
-	function deliver() external only_customer picked_up not_delivered {
-		delivered = true;
-
+	function deliver() external is_customer picked_up not_delivered {
 		uint amount = address(this).balance;
 		owner.transfer(amount * 8 / 10);
 		courier.transfer(amount * 2 / 10);
+		delivered = true;
 	}
 }

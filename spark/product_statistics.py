@@ -1,3 +1,5 @@
+import json
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import sum, coalesce, when, col, lit
 
@@ -43,9 +45,9 @@ product_result_df =  products_df \
     .join(order_df, order_df['id'] == orderProducts_df['orderId']) \
     .groupBy(products_df['name']) \
     .agg(
-        coalesce(sum(when(order_df['status'] == 'COMPLETE', order_df['quantity'])), lit(0)).alias('sold'),
-        coalesce(sum(when(order_df['status'] == 'PENDING', order_df['quantity'])), lit(0)).alias('waiting')
-    )
+        coalesce(sum(when(order_df['status'] == 'COMPLETE', orderProducts_df['quantity'])), lit(0)).alias('sold'),
+        coalesce(sum(when(order_df['status'] != 'COMPLETE', orderProducts_df['quantity'])), lit(0)).alias('waiting')
+    ).orderBy(products_df['name']).toJSON().map(lambda json_str: json.loads(json_str)).collect()
 
 
 print(product_result_df)

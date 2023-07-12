@@ -2,6 +2,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import sum, coalesce, when, col, lit
 
 import os
+import json
 
 DATABASE_IP = os.environ["DATABASE_IP"] if ("DATABASE_IP" in os.environ) else "localhost"
 
@@ -61,10 +62,11 @@ category_result_df = categories_df \
     .join(order_df, order_df['id'] == orderProducts_df['orderId'], 'left') \
     .groupBy(categories_df['name']) \
     .agg(
-        coalesce(sum(when((col('order_df.status')) == 'COMPLETE', orderProducts_df['quantity'])), lit(0)).alias('completed')
-    ).orderBy(col('completed').desc(), categories_df['name'])
+        coalesce(sum(when((col('status')) == 'COMPLETE', orderProducts_df['quantity'])), lit(0)).alias('completed')
+    ).orderBy(col('completed').desc(), categories_df['name']).toJSON().map(lambda json_str: json.loads(json_str)).collect()
 
 
 print(category_result_df)
+
 
 spark.stop()
