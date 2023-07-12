@@ -3,7 +3,7 @@
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "c",
+				"name": "_buyer",
 				"type": "address"
 			}
 		],
@@ -12,48 +12,22 @@
 	},
 	{
 		"inputs": [],
-		"name": "courier",
-		"outputs": [
-			{
-				"internalType": "address payable",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "customer",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "delivered",
+		"name": "delivery_finished",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "owner",
-		"outputs": [
+		"inputs": [
 			{
 				"internalType": "address payable",
-				"name": "",
+				"name": "_courier",
 				"type": "address"
 			}
 		],
-		"stateMutability": "view",
+		"name": "join_courier",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -61,19 +35,6 @@
 		"name": "pay",
 		"outputs": [],
 		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address payable",
-				"name": "c",
-				"type": "address"
-			}
-		],
-		"name": "pickUp",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]

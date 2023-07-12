@@ -141,8 +141,8 @@ def order():
         return Response(json.dumps({'message': 'Invalid address.'}), status=400)
 
 
-    transactionHash = orderContractInterface.constructor(address).transact({
-            'from': owner
+    transactionHash = orderContractInterface.constructor(request.json["address"]).transact({
+            "from": owner,
     })
     receipt = web3.eth.wait_for_transaction_receipt(transactionHash)
 
@@ -223,9 +223,9 @@ def pay():
         return Response(json.dumps({'message': 'Missing passphrase.'}), status=400)
 
     try:
-        keys = json.loads(request.json['keys'].replace("'", '"'))
-        address = web3.to_checksum_address(keys['address'])
-        privateKey = Account.decrypt(keys, passphrase).hex()
+        encodedKeys = json.loads(request.json['keys'].replace("'", '"'))
+        privateKey = Account.decrypt(encodedKeys, passphrase).hex()
+        address = web3.to_checksum_address(encodedKeys['address'])
     except ValueError as ve:
         return Response(json.dumps({'message': 'Invalid credentials.'}), status=400)
 
@@ -235,20 +235,22 @@ def pay():
         bytecode=bytecode
     )
 
-    if web3.eth.get_balance(address) < order.total_price:
-        return Response(json.dumps({'message': 'Insufficient funds.'}), status=400)
+    #if web3.eth.get_balance(address) < int(order.price):
+    #    return Response(json.dumps({'message': 'Insufficient funds.'}), status=400)
 
     try:
         transactionHash = newContract.functions.pay().build_transaction({
             "from": address,
-			"value": int(order.total_price)
+			"value": int(order.price),
+            "gasPrice": 21000,
+            "nonce": web3.eth.get_transaction_count(address),
         })
 
         signedTransaction = web3.eth.account.sign_transaction(transactionHash, privateKey)
         tr_hash = web3.eth.send_raw_transaction(signedTransaction.rawTransaction)
         transaction_receipt = web3.eth.wait_for_transaction_receipt(tr_hash)
     except ContractLogicError as error:
-        return Response(json.dumps({'message': f'{str(error)[7:]}'}), status=400)
+        return Response(json.dumps({'message': f'{str(error)[70:]}'}), status=400)
     except ValueError as ve:
         return Response(json.dumps({'message': 'Insufficient funds.'}), status=400)
 
@@ -296,15 +298,17 @@ def delivered():
     )
 
     try:
-        transactionHash = newContract.functions.delivered().build_transaction({
+        transactionHash = newContract.functions.delivery_finished().build_transaction({
             "from": address,
+            "gasPrice": 21000,
+            "nonce": web3.eth.get_transaction_count(address),
         })
 
         signedTransaction = web3.eth.account.sign_transaction(transactionHash, privateKey)
         tr_hash = web3.eth.send_raw_transaction(signedTransaction.rawTransaction)
         transaction_receipt = web3.eth.wait_for_transaction_receipt(tr_hash)
     except ContractLogicError as error:
-        return Response(json.dumps({'message': f'{str(error)[7:]}'}), status=400)
+        return Response(json.dumps({'message': f'{str(error)[70:]}'}), status=400)
     except ValueError as ve:
         return Response(json.dumps({'message': 'Insufficient funds.'}), status=400)
 

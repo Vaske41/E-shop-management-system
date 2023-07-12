@@ -9,7 +9,7 @@ def read_file(path):
 
 blockchainURL = os.environ['BlockchainURL']
 
-web3 = Web3(HTTPProvider(f"http://{blockchainURL}:8545"))
+web3 = Web3(HTTPProvider(f"http://blockchain:8545"))
 bytecode = read_file('./order.bin')
 abi = read_file('./order.abi')
 

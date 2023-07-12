@@ -1,7 +1,7 @@
 FROM python:3
 
-RUN mkdir -p /opt/src/store
-WORKDIR /opt/src/store
+RUN mkdir -p /opt/src/store/owner
+WORKDIR /opt/src/store/owner
 
 COPY store/applicationOwner.py ./applicationOwner.py
 COPY store/configuration.py ./configuration.py

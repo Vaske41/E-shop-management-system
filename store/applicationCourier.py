@@ -68,7 +68,7 @@ def pick_up_order():
         return Response(json.dumps({'message': 'Invalid order id.'}), status=400)
 
     if not address:
-        return Response(json.dumps({'message': 'Field address is missing.'}), status=400)
+        return Response(json.dumps({'message': 'Missing address.'}), status=400)
 
     if not web3.is_address(address):
         return Response(json.dumps({'message': 'Invalid address.'}), status=400)
@@ -79,13 +79,11 @@ def pick_up_order():
         bytecode=bytecode
     )
     try:
-        transactionHash = newContract.functions.pickUp(address).transact({
+        transactionHash = newContract.functions.join_courier(address).transact({
             'from': owner,
         })
     except ContractLogicError as error:
-        return Response(json.dumps({'message': f'{str(error)[7:]}'}), status=400)
-    except ValueError as ve:
-        return Response(json.dumps({'message': 'Insufficient funds.'}), status=400)
+        return Response(json.dumps({'message': f'{str(error)[70:]}'}), status=400)
 
     order.status = 'PENDING'
     database.session.add(order)
