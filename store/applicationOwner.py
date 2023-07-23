@@ -88,73 +88,18 @@ def update():
 @application.route("/product_statistics", methods=["GET"])
 @roleCheck("owner")
 def product_statistics():
-    if 'SPARK_URL' not in os.environ:
-        products = Product.query \
-            .join(OrderProduct, Product.id == OrderProduct.productId) \
-            .join(Order, OrderProduct.orderId == Order.id) \
-            .having(func.count(Order.id) > 0) \
-            .group_by(Product.id)
-        statistics = []
-        for product in products:
-            sold = database.session.query(func.cast(func.coalesce(func.sum(OrderProduct.quantity), 0), Integer)) \
-                .join(Product, OrderProduct.productId == Product.id) \
-                .join(Order, Order.id == OrderProduct.orderId) \
-                .filter(
-                and_(
-                    Product.id == product.id,
-                    Order.status == 'COMPLETE'
-                )
-            ) \
-                .scalar()
-            waiting = database.session.query(func.cast(func.coalesce(func.sum(OrderProduct.quantity), 0), Integer)) \
-                .join(Product, OrderProduct.productId == Product.id) \
-                .join(Order, Order.id == OrderProduct.orderId) \
-                .filter(
-                and_(
-                    Product.id == product.id,
-                    Order.status != 'COMPLETE'
-                )
-            ) \
-                .scalar()
-            statistics.append({
-                'name': product.name,
-                'sold': int(sold),
-                'waiting': int(waiting),
-            })
-        return Response(json.dumps({'statistics': statistics}), status=200)
-    else:
-        response = requests.get(f'http://{os.environ["SPARK_URL"]}:5005/product_spark')
+    response = requests.get(f'http://{os.environ["SPARK_URL"]}:5005/product_spark')
 
-        return Response(response, status=200)
+    return Response(response, status=200)
 
 
 
 @application.route('/category_statistics', methods=['GET'])
 @roleCheck('owner')
 def category_statistics():
-    if 'SPARK_URL' not in os.environ:
-        statistics = []
-        subquery = database.session.query(
-            Category.id,
-            func.sum(OrderProduct.quantity).label('total')
-        ).join(ProductCategory, ProductCategory.categoryId == Category.id) \
-            .join(Product, Product.id == ProductCategory.productId) \
-            .join(OrderProduct, OrderProduct.productId == Product.id) \
-            .join(Order, OrderProduct.orderId == Order.id) \
-            .filter(Order.status == 'COMPLETE') \
-            .group_by(Category.id).subquery()
+    response = requests.get(f'http://{os.environ["SPARK_URL"]}:5005/category_spark')
 
-        categories = Category.query.outerjoin(subquery, Category.id == subquery.c.id) \
-            .order_by(func.coalesce(subquery.c.total, 0).desc(), Category.name).all()
-
-        for category in categories:
-            statistics.append(category.name)
-
-        return Response(json.dumps({'statistics': statistics}), status=200)
-    else:
-        response = requests.get(f'http://{os.environ["SPARK_URL"]}:5005/category_spark')
-
-        return Response(response, status=200)
+    return Response(response, status=200)
 
 
 if __name__ == "__main__":

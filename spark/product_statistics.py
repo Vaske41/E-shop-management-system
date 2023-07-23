@@ -7,7 +7,7 @@ import os
 
 DATABASE_IP = os.environ["DATABASE_IP"] if ("DATABASE_IP" in os.environ) else "localhost"
 
-builder = SparkSession.builder.appName("Category statistics")
+builder = SparkSession.builder.appName("Product statistics")
 
 spark = builder.getOrCreate()
 

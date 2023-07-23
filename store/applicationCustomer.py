@@ -223,10 +223,10 @@ def pay():
         return Response(json.dumps({'message': 'Missing passphrase.'}), status=400)
 
     try:
-        encodedKeys = json.loads(request.json['keys'].replace("'", '"'))
+        encodedKeys = json.loads(keys.replace("'", '"'))
         privateKey = Account.decrypt(encodedKeys, passphrase).hex()
         address = web3.to_checksum_address(encodedKeys['address'])
-    except ValueError as ve:
+    except Exception as e:
         return Response(json.dumps({'message': 'Invalid credentials.'}), status=400)
 
     newContract = web3.eth.contract(
@@ -282,7 +282,7 @@ def delivered():
         return Response(json.dumps({'message': 'Missing passphrase.'}), status=400)
 
     try:
-        keys = json.loads(request.json['keys'].replace("'", '"'))
+        keys = json.loads(keys.replace("'", '"'))
         address = web3.to_checksum_address(keys['address'])
         privateKey = Account.decrypt(keys, passphrase).hex()
 
